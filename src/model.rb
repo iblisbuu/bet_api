@@ -1,11 +1,22 @@
 # encoding: utf-8
 
 require 'sequel'
+require 'json'
 
 DB = Sequel.connect('sqlite://db.db')
 
 Sequel::Model.plugin(:schema)
 
+class Sequel::Dataset
+  def to_json
+    naked.all.to_json
+  end
+end
+class Sequel::Model
+  def self.to_json
+    dataset.to_json
+  end
+end
 class Events < Sequel::Model
   plugin :serialization, :json
   unless DB.table_exists?(:event)
@@ -14,7 +25,7 @@ class Events < Sequel::Model
       text :name
     end
   end
-  set_database DB[:event]
+  set_dataset DB[:event]
 end
 
 class Bet < Sequel::Model
@@ -26,7 +37,7 @@ class Bet < Sequel::Model
       integer :fk_event
     end
   end
-  set_database DB[:bet]
+  set_dataset DB[:bet]
 end
 
 class Match < Sequel::Model
@@ -38,7 +49,7 @@ class Match < Sequel::Model
       event :fk_event
     end
   end
-  set_database DB[:match]
+  set_dataset DB[:match]
 end
 
 class Match_Bet < Sequel::Model
@@ -50,5 +61,5 @@ class Match_Bet < Sequel::Model
       text :result
     end
   end
-  set_database DB[:match_bet]
+  set_dataset DB[:match_bet]
 end
